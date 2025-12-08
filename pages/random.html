@@ -29,8 +29,11 @@
     <main class="container center-content">
         <section class="random-card" id="randomCard">
             <h2>랜덤 추천</h2>
-            <p id="randomSong" class="random-song">버튼을 눌러 랜덤으로 곡을 추천받으세요.</p>
-            <button id="randomBtn">랜덤 추천 받기</button>
+            <div id="randomSong" class="random-song">버튼을 눌러 랜덤으로 곡을 추천받으세요.</div>
+            <div class="controls-row" style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:14px;">
+                <a id="playLinkPlaceholder" class="play-btn" href="#" target="_blank" rel="noopener noreferrer" style="display:none">지금 듣기 (YouTube)</a>
+                <button id="randomBtn" class="big-btn">다른 곡 추천받기</button>
+            </div>
         </section>
     </main>
 
@@ -38,24 +41,57 @@
         <small>© 무뮤 MoodMusic - 프로토타입</small>
     </footer>
 
-    <script>
-        const pool = [
-            {title: 'Sunshine Melody', artist: 'A. Artist'},
-            {title: 'Quiet Night', artist: 'C. Composer'},
-            {title: 'Run Wild', artist: 'G. Groove'},
-            {title: 'Blue Rain', artist: 'E. Echo'},
-            {title: 'Close to You', artist: 'I. Intone'},
-            {title: 'Old Days', artist: 'K. Keepsake'}
-        ];
+    <!-- musicData 로드 -->
+    <script src="../js/musicData.js"></script>
 
+    <script>
         const btn = document.getElementById('randomBtn');
         const display = document.getElementById('randomSong');
+        const playLinkPlaceholder = document.getElementById('playLinkPlaceholder');
 
-        btn.addEventListener('click', () => {
-            const pick = pool[Math.floor(Math.random()*pool.length)];
-            display.textContent = `${pick.title} — ${pick.artist}`;
-            display.classList.add('reveal');
-        });
+        function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+        function pickRandom() {
+    if (!Array.isArray(musicData) || musicData.length === 0) {
+        display.textContent = '추천 가능한 곡 데이터가 없습니다.';
+        return;
+    }
+    const pick = musicData[Math.floor(Math.random()*musicData.length)];
+
+    // 유튜브 링크 생성
+    const yt = pick.youtubeId ? `https://www.youtube.com/watch?v=${encodeURIComponent(pick.youtubeId)}` : '#';
+
+    // 썸네일 주소 생성
+    const thumbUrl = pick.youtubeId ? `https://img.youtube.com/vi/${pick.youtubeId}/hqdefault.jpg` : '';
+
+    // 화면 출력: 카드 형태(썸네일 고정 크기 + 정보)
+    display.innerHTML = `
+        <div class="song-card" style="max-width:520px;">
+            <div class="card-head">
+                <a class="thumb-link" href="${yt}" target="_blank" rel="noopener noreferrer">
+                    <div class="thumb">
+                        ${thumbUrl ? `<img src="${thumbUrl}" alt="${escapeHtml(pick.title)} 썸네일">` : `<div class="no-thumb">No thumbnail</div>`}
+                    </div>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="title">${escapeHtml(pick.title)}</div>
+                <div class="meta">${escapeHtml(pick.artist)} · <span class="muted">${escapeHtml(pick.mood)}</span></div>
+                <div class="desc muted">${escapeHtml(pick.desc || '')}</div>
+            </div>
+        </div>
+    `;
+
+    // play 버튼 링크 업데이트 및 보이기
+    if (playLinkPlaceholder) {
+        playLinkPlaceholder.href = yt;
+        playLinkPlaceholder.style.display = yt === '#' ? 'none' : 'inline-block';
+    }
+}
+
+        btn.addEventListener('click', pickRandom);
+        // 로드 시 한 곡 자동 표시
+        pickRandom();
     </script>
 </body>
 </html>

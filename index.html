@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>무뮤(MoodMusic)</title>
-    <!-- 페이지가 렌더되기 전에 저장된 테마를 적용해 플래시 최소화 -->
     <script>
         (function(){
             try {
@@ -38,11 +37,15 @@
             </div>
         </section>
 
-        <section class="recommend-section">
+        <!-- 플레이어 카드(가로 3개) -->
+        <section class="player-section">
             <h3>추천곡</h3>
-            <ul id="recommendList" class="recommend-list">
-                <li class="placeholder">감정을 선택하면 추천곡이 표시됩니다.</li>
-            </ul>
+            <div id="playerGrid" class="player-grid" aria-live="polite">
+                <!-- 카드 3개가 여기 렌더됩니다 -->
+            </div>
+            <div class="player-controls" style="text-align:center;margin-top:12px;">
+                <button id="refreshBtn" class="refresh-btn">새로고침</button>
+            </div>
         </section>
     </main>
 
@@ -50,39 +53,83 @@
         <small>© 무뮤 MoodMusic - 프로토타입</small>
     </footer>
 
+    <!-- musicData 로드 -->
+    <script src="js/musicData.js"></script>
+
     <script>
-        // 감정별 곡 데이터 (간단 예시)
-        const catalog = {
-            happy: [
-                {title: 'Sunshine Melody', artist: 'A. Artist'},
-                {title: 'Happy Day', artist: 'B. Band'}
-            ],
-            sad: [
-                {title: 'Blue Rain', artist: 'E. Echo'},
-                {title: 'Cold Coffee', artist: 'F. Flow'}
-            ],
-            calm: [
-                {title: 'Quiet Night', artist: 'C. Composer'},
-                {title: 'Breathe', artist: 'D. Dream'}
-            ],
-            angry: [
-                {title: 'Run Wild', artist: 'G. Groove'},
-                {title: 'High Voltage', artist: 'H. Heat'}
-            ]
+        // musicData.js 의 musicData 배열 사용
+        const moodKeyToLabel = {
+            happy: '기쁨',
+            sad: '슬픔',
+            calm: '평온',
+            angry: '분노'
         };
 
         const moodGrid = document.getElementById('moodGrid');
-        const recommendList = document.getElementById('recommendList');
+        const playerGrid = document.getElementById('playerGrid');
 
-        // 적용된 테마 불러오기 (브라우저 localStorage에 저장)
+        // n개 무작위 선택 (Fisher-Yates 섞기 후 slice)
+        function pickNRandom(arr, n) {
+            if (!Array.isArray(arr)) return [];
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a.slice(0, n);
+        }
+
+        function makeSongCard(song) {
+            const card = document.createElement('div');
+            card.className = 'song-card';
+
+            const youtubeId = song.youtubeId || '';
+            const thumbUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : '';
+
+            card.innerHTML = `
+                <div class="card-head">
+                    <a class="thumb-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}" target="_blank" rel="noopener noreferrer">
+                        <div class="thumb">
+                            ${thumbUrl ? `<img src="${thumbUrl}" alt="${escapeHtml(song.title)} 썸네일">` :
+                            `<div class="no-thumb">No thumbnail</div>`}
+                        </div>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="title">${escapeHtml(song.title)}</div>
+                    <div class="meta">${escapeHtml(song.artist)} · <span class="muted">${escapeHtml(song.genre)}</span></div>
+                    <div class="desc muted">${escapeHtml(song.desc || '')}</div>
+                    <div class="card-actions">
+                        <a class="play-btn" href="https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}" target="_blank" rel="noopener noreferrer">듣기 (YouTube)</a>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function renderForMood(moodKey) {
+            let pool = Array.isArray(musicData) ? musicData : [];
+            if (moodKey && moodKeyToLabel[moodKey]) {
+                const label = moodKeyToLabel[moodKey];
+                pool = pool.filter(s => s.mood === label);
+            }
+            const picks = pickNRandom(pool, 3);
+            playerGrid.innerHTML = '';
+            if (!picks.length) {
+                playerGrid.innerHTML = '<div class="placeholder">추천곡이 없습니다.</div>';
+                return;
+            }
+            picks.forEach(song => playerGrid.appendChild(makeSongCard(song)));
+        }
+
+        // 초기 로드: 저장된 테마가 있으면 그 감정에서, 없으면 전체에서 랜덤 3곡
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
             const btn = document.querySelector(`.mood-grid button[data-mood="${savedTheme}"]`);
             if (btn) btn.classList.add('selected');
-            const songs = catalog[savedTheme] || [];
-            renderRecommendations(songs);
         }
+        renderForMood(savedTheme || null);
 
         moodGrid.addEventListener('click', (e) => {
             const btn = e.target.closest('button[data-mood]');
@@ -90,29 +137,25 @@
             document.querySelectorAll('.mood-grid button').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
 
-            const mood = btn.dataset.mood;
+            const mood = btn.dataset.mood; // english key
             // 테마 적용 및 저장
             document.documentElement.setAttribute('data-theme', mood);
             localStorage.setItem('theme', mood);
 
-            const songs = catalog[mood] || [];
-            renderRecommendations(songs);
+            renderForMood(mood);
         });
 
-        function renderRecommendations(songs) {
-            recommendList.innerHTML = '';
-            if (songs.length === 0) {
-                recommendList.innerHTML = '<li class="placeholder">추천곡이 없습니다.</li>';
-                return;
-            }
-            songs.forEach(s => {
-                const li = document.createElement('li');
-                li.className = 'song-item';
-                li.textContent = `${s.title} — ${s.artist}`;
-                recommendList.appendChild(li);
+        // 새로고침 버튼: 같은 감정(또는 전체)에서 3곡을 재샘플
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                const sel = document.querySelector('.mood-grid button.selected');
+                const mood = sel ? sel.dataset.mood : null;
+                renderForMood(mood);
             });
-            recommendList.scrollIntoView({behavior: 'smooth', block: 'center'});
         }
+
+        function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     </script>
 </body>
 </html>
