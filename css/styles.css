@@ -149,19 +149,22 @@ html[data-theme="angry"] {
     display:inline-block;padding:8px 12px;border-radius:8px;text-decoration:none;background:var(--accent);color:#fff;font-weight:600;
 }
 
-/* 새로고침 버튼 (메인) */
+/* 새로고침 버튼 (메인) - 더 뚜렷하게 */
 .refresh-btn{
-    padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;
+    padding:12px 24px;font-size:16px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:transform .12s ease, box-shadow .12s ease;
 }
+.refresh-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.2)}
 
 /* 랜덤 페이지: 썸네일 고정 크기 (반응형 범위 유지) */
 .random-card .thumb{height:240px;width:420px;max-width:100%;overflow:hidden;border-radius:8px}
 .random-card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* 큰 버튼 스타일 및 가운데 정렬/간격 */
-.big-btn{padding:12px 22px;font-size:16px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
-.controls-row .play-btn{padding:12px 18px;font-size:15px}
-.controls-row{display:flex;gap:12px;justify-content:center;align-items:center}
+/* 큰 버튼 스타일 및 가운데 정렬/간격 - 더 뚜렷하게 */
+.big-btn{padding:14px 28px;font-size:17px;font-weight:800;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:transform .12s ease, box-shadow .12s ease;}
+.big-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.2)}
+.controls-row .play-btn{padding:14px 22px;font-size:16px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:transform .12s ease, box-shadow .12s ease;}
+.controls-row .play-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.2)}
+.controls-row{display:flex;gap:14px;justify-content:center;align-items:center}
 
 /* 랜덤 페이지 내부 플레이어 정렬 */
 .random-container{display:flex;flex-direction:column;align-items:center;gap:10px}

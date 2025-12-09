@@ -64,6 +64,9 @@
     // 썸네일 주소 생성
     const thumbUrl = pick.youtubeId ? `https://img.youtube.com/vi/${pick.youtubeId}/hqdefault.jpg` : '';
 
+    // 현재 곡을 localStorage에 저장
+    localStorage.setItem('currentRandomSong', JSON.stringify(pick));
+
     // 화면 출력: 카드 형태(썸네일 고정 크기 + 정보)
     display.innerHTML = `
         <div class="song-card" style="max-width:520px;">
@@ -90,8 +93,42 @@
 }
 
         btn.addEventListener('click', pickRandom);
-        // 로드 시 한 곡 자동 표시
-        pickRandom();
+
+        // 로드 시: localStorage에 저장된 곡이 있으면 그걸 표시, 없으면 새로 뽑기
+        const savedRandomSong = localStorage.getItem('currentRandomSong');
+        if (savedRandomSong) {
+            try {
+                const pick = JSON.parse(savedRandomSong);
+                const yt = pick.youtubeId ? `https://www.youtube.com/watch?v=${encodeURIComponent(pick.youtubeId)}` : '#';
+                const thumbUrl = pick.youtubeId ? `https://img.youtube.com/vi/${pick.youtubeId}/hqdefault.jpg` : '';
+
+                display.innerHTML = `
+                    <div class="song-card" style="max-width:520px;">
+                        <div class="card-head">
+                            <a class="thumb-link" href="${yt}" target="_blank" rel="noopener noreferrer">
+                                <div class="thumb">
+                                    ${thumbUrl ? `<img src="${thumbUrl}" alt="${escapeHtml(pick.title)} 썸네일">` : `<div class="no-thumb">No thumbnail</div>`}
+                                </div>
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div class="title">${escapeHtml(pick.title)}</div>
+                            <div class="meta">${escapeHtml(pick.artist)} · <span class="muted">${escapeHtml(pick.mood)}</span></div>
+                            <div class="desc muted">${escapeHtml(pick.desc || '')}</div>
+                        </div>
+                    </div>
+                `;
+
+                if (playLinkPlaceholder) {
+                    playLinkPlaceholder.href = yt;
+                    playLinkPlaceholder.style.display = yt === '#' ? 'none' : 'inline-block';
+                }
+            } catch (e) {
+                pickRandom();
+            }
+        } else {
+            pickRandom();
+        }
     </script>
 </body>
 </html>
