@@ -27,27 +27,32 @@
     </header>
 
     <main class="container">
-        <section class="suggest-form">
+        <section class="suggest-form-section">
             <h2>곡 추천하기</h2>
-            <form id="songForm">
-                <label>곡 제목
-                    <input type="text" id="title" required>
-                </label>
-                <label>아티스트
-                    <input type="text" id="artist" required>
-                </label>
-                <label>감정
-                    <input type="text" id="mood" placeholder="예: 기쁨, 슬픔, 평온 등">
-                </label>
-                <button type="submit">추천 공유</button>
+            <form id="songForm" class="suggest-form-card">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="title">곡 제목</label>
+                        <input type="text" id="title" placeholder="노래 제목 입력" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="artist">아티스트</label>
+                        <input type="text" id="artist" placeholder="아티스트명 입력" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="mood">감정</label>
+                        <input type="text" id="mood" placeholder="기쁨, 슬픔, 평온 등">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">추천 공유하기</button>
             </form>
         </section>
-
-        <section class="suggest-list">
-            <h3>추천된 노래</h3>
-            <ul id="sharedList">
-                <li class="placeholder">아직 공유된 곡이 없습니다.</li>
-            </ul>
+        <section class="suggest-list-section">
+            <div class="section-header">
+                <h3>추천된 노래</h3>
+                <span class="count" id="songCount">0곡</span>
+            </div>
+            <div id="sharedList" class="shared-cards-container"></div>
         </section>
     </main>
 
@@ -55,25 +60,76 @@
         <small>© 무뮤 MoodMusic - 프로토타입</small>
     </footer>
 
+    <script src="../js/script.js"></script>
     <script>
         const form = document.getElementById('songForm');
         const sharedList = document.getElementById('sharedList');
+
+        function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
 
         function loadShared() {
             const list = JSON.parse(localStorage.getItem('sharedSongs') || '[]');
             renderList(list);
         }
+        
+        function sortSongs(list) {
+            return list.sort((a, b) => {
+                const likesA = a.likes || 0;
+                const likesB = b.likes || 0;
+                if (likesB !== likesA) return likesB - likesA;
+                return (a.timestamp || 0) - (b.timestamp || 0);
+            });
+        }
+        
         function renderList(list) {
+            const songCount = document.getElementById('songCount');
             sharedList.innerHTML = '';
-            if (list.length === 0) {
-                sharedList.innerHTML = '<li class="placeholder">아직 공유된 곡이 없습니다.</li>';
+            
+            if (!list.length) {
+                sharedList.innerHTML = '<div class="placeholder-card">아직 공유된 곡이 없습니다.</div>';
+                if (songCount) songCount.textContent = '0곡';
                 return;
             }
-            list.forEach((s) => {
-                const li = document.createElement('li');
-                li.textContent = `${s.title} — ${s.artist} ${s.mood ? '('+s.mood+')' : ''}`;
-                sharedList.appendChild(li);
+            
+            if (songCount) songCount.textContent = `${list.length}곡`;
+            
+            const sortedList = sortSongs([...list]);
+            sortedList.forEach((s, idx) => {
+                const originalIndex = list.indexOf(s);
+                const card = document.createElement('div');
+                card.className = 'shared-song-card';
+                card.innerHTML = `
+                    <div class="card-number">#${idx + 1}</div>
+                    <div class="card-content">
+                        <div class="song-title">${escapeHtml(s.title)}</div>
+                        <div class="song-artist">${escapeHtml(s.artist)}</div>
+                        ${s.mood ? `<div class="song-mood"><span class="mood-tag">${escapeHtml(s.mood)}</span></div>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="heart-btn" onclick="toggleLike(${originalIndex})" aria-label="좋아요">
+                            <span class="heart-icon">${s.likes > 0 ? '❤️' : '🤍'}</span>
+                            <span class="heart-count">${s.likes || 0}</span>
+                        </button>
+                        <button class="delete-btn" onclick="deleteSong(${originalIndex})" aria-label="삭제">×</button>
+                    </div>
+                `;
+                sharedList.appendChild(card);
             });
+        }
+
+        function toggleLike(index) {
+            const list = JSON.parse(localStorage.getItem('sharedSongs') || '[]');
+            if (!list[index]) return;
+            list[index].likes = (list[index].likes || 0) + 1;
+            localStorage.setItem('sharedSongs', JSON.stringify(list));
+            renderList(list);
+        }
+
+        function deleteSong(index) {
+            const list = JSON.parse(localStorage.getItem('sharedSongs') || '[]');
+            list.splice(index, 1);
+            localStorage.setItem('sharedSongs', JSON.stringify(list));
+            renderList(list);
         }
 
         form.addEventListener('submit', (e) => {
@@ -83,10 +139,11 @@
             const mood = document.getElementById('mood').value.trim();
             if (!title || !artist) return;
             const list = JSON.parse(localStorage.getItem('sharedSongs') || '[]');
-            list.unshift({title, artist, mood});
+            list.push({title, artist, mood, likes: 0, timestamp: Date.now()});
             localStorage.setItem('sharedSongs', JSON.stringify(list));
             form.reset();
             renderList(list);
+            sharedList.scrollTo({ left: 0, behavior: 'smooth' });
         });
 
         loadShared();

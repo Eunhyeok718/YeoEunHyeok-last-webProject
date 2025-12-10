@@ -43,6 +43,7 @@
 
     <!-- musicData 로드 -->
     <script src="../js/musicData.js"></script>
+    <script src="../js/script.js"></script>
 
     <script>
         const btn = document.getElementById('randomBtn');
@@ -92,7 +93,33 @@
     }
 }
 
-        btn.addEventListener('click', pickRandom);
+        btn.addEventListener('click', () => {
+            // 카드 페이드 아웃 후 새 곡 로드
+            const currentCard = display.querySelector('.song-card');
+            if (currentCard) {
+                currentCard.style.opacity = '0';
+                currentCard.style.transform = 'scale(0.9)';
+                currentCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            }
+            
+            setTimeout(() => {
+                pickRandom();
+                
+                // 새 카드 페이드 인
+                setTimeout(() => {
+                    const newCard = display.querySelector('.song-card');
+                    if (newCard) {
+                        newCard.style.opacity = '0';
+                        newCard.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            newCard.style.opacity = '1';
+                            newCard.style.transform = 'scale(1)';
+                            newCard.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                        }, 50);
+                    }
+                }, 50);
+            }, 300);
+        });
 
         // 로드 시: localStorage에 저장된 곡이 있으면 그걸 표시, 없으면 새로 뽑기
         const savedRandomSong = localStorage.getItem('currentRandomSong');

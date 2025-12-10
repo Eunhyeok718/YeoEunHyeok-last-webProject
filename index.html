@@ -55,6 +55,7 @@
 
     <!-- musicData 로드 -->
     <script src="js/musicData.js"></script>
+    <script src="js/script.js"></script>
 
     <script>
         // musicData.js 의 musicData 배열 사용
@@ -182,9 +183,33 @@
         const refreshBtn = document.getElementById('refreshBtn');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
-                const sel = document.querySelector('.mood-grid button.selected');
-                const mood = sel ? sel.dataset.mood : null;
-                renderForMood(mood);
+                // 카드들 페이드 아웃 후 새로운 곡 로드
+                const cards = playerGrid.querySelectorAll('.song-card');
+                cards.forEach((card, idx) => {
+                    setTimeout(() => {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                    }, idx * 50);
+                });
+                
+                setTimeout(() => {
+                    const sel = document.querySelector('.mood-grid button.selected');
+                    const mood = sel ? sel.dataset.mood : null;
+                    renderForMood(mood);
+                    
+                    // 새 카드 페이드 인
+                    setTimeout(() => {
+                        const newCards = playerGrid.querySelectorAll('.song-card');
+                        newCards.forEach((card, idx) => {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, idx * 100);
+                        });
+                    }, 50);
+                }, 300);
             });
         }
 
