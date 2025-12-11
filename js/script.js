@@ -7,7 +7,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         // 페이드인 애니메이션
         document.body.style.opacity = '0';
-        document.body.style.transition = 'opacity 0.4s ease';
+        document.body.style.transition = 'opacity 0.3s ease';
         setTimeout(() => {
             document.body.style.opacity = '1';
         }, 50);
@@ -31,13 +31,13 @@
         
         elementsToAnimate.forEach((el, index) => {
             el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            el.style.transform = 'translateY(10px)';
+            el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
             
             setTimeout(() => {
                 el.style.opacity = '1';
                 el.style.transform = 'translateY(0)';
-            }, 100 + (index * 50));
+            }, 80 + (index * 30));
         });
     }
 
@@ -45,6 +45,7 @@
     function initScrollEffects() {
         let lastScroll = 0;
         const header = document.querySelector('.site-header');
+        const footer = document.querySelector('.site-footer');
         
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
@@ -54,6 +55,16 @@
                 header.style.transform = 'translateY(-100%)';
             } else {
                 header.style.transform = 'translateY(0)';
+            }
+            
+            // 푸터(라이선스) 표시: 페이지 끝에 도달했을 때만 표시
+            const isNearBottom = (window.innerHeight + currentScroll) >= (document.body.offsetHeight - 100);
+            if (footer) {
+                if (isNearBottom) {
+                    footer.classList.add('visible');
+                } else {
+                    footer.classList.remove('visible');
+                }
             }
             
             lastScroll = currentScroll;
@@ -121,11 +132,15 @@
     
     function applyCardEffects() {
         const cards = document.querySelectorAll('.song-card, .shared-song-card');
+        const isMobile = window.innerWidth <= 768;
         
         cards.forEach(card => {
             // 기존 이벤트 리스너 제거를 위한 클론 방식 대신 플래그 사용
             if (card.dataset.effectsApplied) return;
             card.dataset.effectsApplied = 'true';
+            
+            // 모바일에서는 3D 효과 비활성화 (성능 최적화)
+            if (isMobile) return;
             
             card.addEventListener('mouseenter', function() {
                 this.style.transition = 'transform 0.1s ease';
@@ -165,6 +180,9 @@
 
     // === 배경 파티클 효과 ===
     function createParticles() {
+        // 모바일에서는 파티클 효과 비활성화 (배터리/성능)
+        if (window.innerWidth <= 768) return;
+        
         const particlesContainer = document.createElement('div');
         particlesContainer.className = 'particles-container';
         particlesContainer.style.cssText = `
@@ -200,12 +218,14 @@
     const moodButtons = document.querySelectorAll('.mood-grid button');
     moodButtons.forEach(button => {
         button.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.05)';
+            this.style.transform = 'translateY(-4px) scale(1.02)';
+            this.style.transition = 'transform 0.2s ease';
         });
         
         button.addEventListener('mouseleave', function() {
             if (!this.classList.contains('selected')) {
                 this.style.transform = 'translateY(0) scale(1)';
+                this.style.transition = 'transform 0.2s ease';
             }
         });
     });
@@ -243,11 +263,11 @@
         
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.03); }
         }
         
         .mood-grid button.selected {
-            animation: pulse 2s infinite;
+            animation: pulse 2.5s ease-in-out infinite;
         }
         
         .heart-btn:active {
@@ -256,9 +276,9 @@
         
         @keyframes heartbeat {
             0%, 100% { transform: scale(1); }
-            25% { transform: scale(1.3); }
-            50% { transform: scale(0.9); }
-            75% { transform: scale(1.2); }
+            25% { transform: scale(1.15); }
+            50% { transform: scale(0.95); }
+            75% { transform: scale(1.1); }
         }
         
         .site-header {
@@ -273,5 +293,26 @@
 
     // 페이지별 특수 효과
     createParticles();
+    
+    // 모바일 뷰포트 설정 확인
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (!viewportMeta) {
+        const meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes';
+        document.head.appendChild(meta);
+    }
+    
+    // 윈도우 리사이즈 시 3D 효과 재적용
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            document.querySelectorAll('[data-effects-applied]').forEach(el => {
+                delete el.dataset.effectsApplied;
+            });
+            applyCardEffects();
+        }, 250);
+    });
 
 })();

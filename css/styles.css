@@ -77,13 +77,21 @@ html[data-theme="angry"] {
     bottom:0;
     left:0;
     right:0;
-    height:42px;
+    height:auto;
     display:flex;
     align-items:center;
     justify-content:center;
     background:transparent;
     color:var(--muted);
+    padding:8px 0;
+    font-size:11px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.3s ease;
+    z-index:999;
 }
+.site-footer.visible{opacity:1;pointer-events:auto}
+.site-footer small{display:block;text-align:center}
 
 /* mood grid */
 .mood-section{margin:20px 0}
@@ -178,6 +186,127 @@ html[data-theme="angry"] {
 @media (max-width:600px){
     .player-grid{grid-template-columns:repeat(1,1fr)}
     .thumb{height:160px}
+}
+
+/* 모바일 최적화 */
+@media (max-width:768px){
+    body{padding-top:60px;padding-bottom:30px}
+    
+    /* 헤더 */
+    .site-header{height:60px;padding:0 16px}
+    .logo{font-size:16px}
+    .nav{gap:8px}
+    .nav a{padding:6px 8px;font-size:14px}
+    
+    /* 컨테이너 */
+    .container{margin:20px auto;padding:16px}
+    
+    /* 감정 그리드 */
+    .mood-grid{gap:10px;margin:0 auto;max-width:100%}
+    .mood-grid button{padding:12px;font-size:14px;border-radius:10px}
+    
+    /* 플레이어 그리드 */
+    .player-grid{gap:12px;margin-top:8px}
+    .song-card{border-radius:10px}
+    .thumb{height:140px}
+    .card-body{padding:10px}
+    .card-body .title{font-size:14px}
+    .card-body .meta{font-size:12px}
+    .play-btn{padding:8px 12px;font-size:14px}
+    
+    /* 새로고침 버튼 */
+    .refresh-btn{padding:10px 20px;font-size:14px}
+    
+    /* 라운드 버튼들 */
+    .big-btn, .submit-btn{padding:10px 18px;font-size:15px}
+    .controls-row{gap:10px}
+    .controls-row .play-btn{padding:10px 16px;font-size:14px}
+    
+    /* 폼 */
+    .suggest-form-section{margin-bottom:24px}
+    .suggest-form-section h2{font-size:20px;margin-bottom:16px}
+    .form-grid{gap:12px;margin-bottom:16px}
+    .form-field label{font-size:13px}
+    .form-field input{padding:9px 10px;font-size:14px}
+    
+    /* 추천 리스트 */
+    .suggest-list-section{margin:16px auto;padding:0 16px}
+    .section-header{margin-bottom:12px;padding:0 2px}
+    .section-header h3{font-size:18px}
+    .section-header .count{font-size:12px;padding:3px 10px}
+    
+    /* 카드 */
+    .shared-song-card{min-width:240px;max-width:240px;padding:16px}
+    .card-number{font-size:11px;padding:3px 6px}
+    .song-title{font-size:16px}
+    .song-artist{font-size:14px}
+    .mood-tag{padding:4px 10px;font-size:12px}
+    .card-actions{gap:6px;margin-top:12px}
+    .heart-btn{padding:6px 10px;font-size:14px}
+    .heart-icon{font-size:14px}
+    .heart-count{font-size:13px}
+    .delete-btn{width:28px;height:28px;font-size:18px}
+    
+    /* 랜덤 카드 */
+    .random-card{max-width:100%;padding:20px}
+    .random-card .thumb{height:200px;width:100%;max-width:100%}
+    
+    /* 푸터 */
+    .site-footer{height:auto;padding:6px 0}
+    .site-footer small{font-size:11px}
+    
+    /* 스크롤 progress */
+    #scrollProgress{top:60px;height:2px}
+}
+
+@media (max-width:480px){
+    body{padding-top:56px;padding-bottom:50px}
+    
+    .site-header{height:56px;padding:0 12px}
+    .logo{font-size:14px}
+    .nav{gap:4px}
+    .nav a{padding:4px 6px;font-size:12px}
+    
+    .container{margin:16px auto;padding:12px}
+    
+    /* 감정 버튼 */
+    .mood-grid{gap:8px}
+    .mood-grid button{padding:10px;font-size:13px;border-radius:8px}
+    
+    /* 플레이어 */
+    .player-grid{grid-template-columns:1fr;gap:10px}
+    .thumb{height:120px}
+    .card-body{padding:8px}
+    .card-body .title{font-size:13px}
+    
+    /* 버튼 크기 조정 */
+    .refresh-btn, .big-btn, .submit-btn{padding:9px 16px;font-size:13px;width:100%}
+    
+    /* 폼 */
+    .form-grid{grid-template-columns:1fr}
+    .form-field input{padding:8px}
+    
+    /* 카드 */
+    .shared-song-card{min-width:220px;max-width:220px;padding:14px}
+    .song-title{font-size:15px}
+    .song-artist{font-size:13px}
+    
+    /* 랜덤 */
+    .random-card{padding:16px}
+}
+
+/* 터치 장치 최적화 */
+@media (hover: none) and (pointer: coarse) {
+    button, .play-btn, .mood-grid button, .heart-btn, .delete-btn {
+        min-height:44px;
+        min-width:44px;
+    }
+    
+    .mood-grid button{padding:14px 12px}
+    .shared-song-card:hover{transform:none;box-shadow:var(--shadow)}
+    .song-card:hover{transform:none;box-shadow:var(--shadow)}
+    
+    .heart-btn:hover, .delete-btn:hover{background:rgba(0,0,0,.08)}
 }
 
 /* suggest form */
