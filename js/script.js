@@ -5,12 +5,11 @@
 
     // === 페이지 로드 애니메이션 ===
     document.addEventListener('DOMContentLoaded', () => {
-        // 페이드인 애니메이션
-        document.body.style.opacity = '0';
-        document.body.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => {
-            document.body.style.opacity = '1';
-        }, 50);
+        // 페이지 전환 오버레이 생성
+        createPageTransitionOverlay();
+        
+        // 페이지 네비게이션 트랜지션 설정
+        initPageTransitions();
 
         // 요소들 순차 애니메이션
         animateElements();
@@ -24,6 +23,46 @@
         // 카드 호버 3D 효과
         init3DCardEffect();
     });
+
+    // === 페이지 전환 오버레이 생성 ===
+    function createPageTransitionOverlay() {
+        const overlay = document.createElement('div');
+        overlay.className = 'page-transition-overlay';
+        overlay.id = 'pageTransitionOverlay';
+        document.body.appendChild(overlay);
+    }
+
+    // === 페이지 전환 효과 ===
+    function initPageTransitions() {
+        const navLinks = document.querySelectorAll('.nav a, .logo');
+        const overlay = document.getElementById('pageTransitionOverlay');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                
+                // 현재 페이지면 전환 효과 없이 리턴
+                if (href && (href === '#' || link.classList.contains('active'))) {
+                    return;
+                }
+                
+                // 외부 링크나 앵커 링크는 제외
+                if (!href || href.startsWith('http') || href.startsWith('#')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                
+                // 오버레이 활성화
+                overlay.classList.add('active');
+                
+                // 페이지 이동
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
+        });
+    }
 
     // === 요소 순차 애니메이션 ===
     function animateElements() {
@@ -293,6 +332,11 @@
 
     // 페이지별 특수 효과
     createParticles();
+    createThemeDecorations();
+    createSparkles();
+    
+    // 테마 변경 감지
+    observeThemeChanges();
     
     // 모바일 뷰포트 설정 확인
     const viewportMeta = document.querySelector('meta[name="viewport"]');

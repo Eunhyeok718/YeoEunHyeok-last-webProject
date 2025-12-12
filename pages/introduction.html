@@ -27,12 +27,54 @@
         </nav>
     </header>
 
-    <main class="container center-content">
-        <section class="intro">
-            <h2>서비스 소개</h2>
-            <p>무뮤(MoodMusic)는 현재 기분에 맞는 음악을 빠르게 추천해주는 프로토타입 서비스입니다.</p>
-            <p>감정 선택으로 추천을 받고, 랜덤으로 곡을 발견하거나 다른 사용자가 공유한 추천을 볼 수 있습니다.</p>
-            <p class="muted">(이 페이지는 로컬 정적 파일로 동작합니다)</p>
+    <main class="container intro-page">
+        <section class="intro-hero">
+            <div class="intro-icon" aria-hidden="true">🎵</div>
+            <h1 class="intro-title">무뮤 — MoodMusic</h1>
+            <p class="intro-tagline">감정에 맞춘 음악을 가장 자연스럽게 추천합니다</p>
+        </section>
+
+        <section class="intro-content symmetric-grid" aria-label="서비스 핵심 소개">
+            <div class="intro-card">
+                <div class="card-icon" aria-hidden="true">😊</div>
+                <h3>감정 기반 추천</h3>
+                <p>행복 · 슬픔 · 평온 · 분노 중 감정을 선택하면 딱 맞는 3곡을 바로 추천해드립니다.</p>
+            </div>
+
+            <div class="intro-card">
+                <div class="card-icon" aria-hidden="true">🎲</div>
+                <h3>랜덤 발견</h3>
+                <p>낯선 장르와 분위기의 음악을 자연스럽게 탐색할 수 있도록 랜덤 추천을 제공합니다.</p>
+            </div>
+
+            <div class="intro-card">
+                <div class="card-icon" aria-hidden="true">💝</div>
+                <h3>커뮤니티 공유</h3>
+                <p>사용자 추천을 확인하고 하트로 공감하세요. 당신의 추천도 쉽게 공유할 수 있습니다.</p>
+            </div>
+
+            <div class="intro-card">
+                <div class="card-icon" aria-hidden="true">🎨</div>
+                <h3>감성 테마</h3>
+                <p>감정에 따라 파스텔톤 테마가 바뀌어 시각적으로도 몰입감을 제공합니다.</p>
+            </div>
+        </section>
+
+        <section class="intro-features" aria-label="주요 기능">
+            <h2>주요 기능</h2>
+            <ul class="feature-list symmetric-list">
+                <li>✨ 감정별 맞춤 큐레이션</li>
+                <li>🔄 감정별 곡 기억</li>
+                <li>📱 반응형·모바일 최적화</li>
+                <li>💾 빠른 로컬 저장</li>
+                <li>🎬 YouTube 연동 재생</li>
+                <li>❤️ 좋아요·정렬 지원</li>
+            </ul>
+        </section>
+
+        <section class="intro-footer-note" aria-label="기술 노트">
+            <p class="tech-note">💡 순수 HTML · CSS · JavaScript로 구현된 클라이언트 사이드 프로토타입입니다.</p>
+            <p class="tech-note">데이터는 브라우저의 localStorage에 저장되며 서버 없이 동작합니다.</p>
         </section>
     </main>
 
@@ -41,5 +83,6 @@
     </footer>
 
     <script src="../js/script.js"></script>
+    <script src="../js/themeEffects.js"></script>
 </body>
 </html>
