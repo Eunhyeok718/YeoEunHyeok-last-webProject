@@ -42,8 +42,19 @@
         initScrollEffects();
         initMouseEffects();
         init3DCardEffect();
-        createParticles();
-        injectStyles();
+        
+        // 비필수 작업은 idle 시점에 실행
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                createParticles();
+                injectStyles();
+            });
+        } else {
+            setTimeout(() => {
+                createParticles();
+                injectStyles();
+            }, 1000);
+        }
     });
 
     // === 페이지 전환 오버레이 생성 ===
@@ -107,7 +118,6 @@
         let lastScroll = 0;
         const header = document.querySelector('.site-header');
         const footer = document.querySelector('.site-footer');
-        let progressBar = null;
         
         const handleScroll = throttle(() => {
             const currentScroll = window.pageYOffset;
@@ -124,16 +134,6 @@
                 const isNearBottom = (window.innerHeight + currentScroll) >= (document.body.offsetHeight - 100);
                 footer.classList.toggle('visible', isNearBottom);
             }
-            
-            // 스크롤 진행 표시
-            if (!progressBar) {
-                progressBar = document.createElement('div');
-                progressBar.id = 'scrollProgress';
-                progressBar.style.cssText = 'position:fixed;top:64px;left:0;width:0;height:3px;background:var(--accent);z-index:1001;transition:width 0.1s ease';
-                document.body.appendChild(progressBar);
-            }
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            progressBar.style.width = ((currentScroll / height) * 100) + '%';
             
             lastScroll = currentScroll;
         }, SCROLL_THROTTLE);
@@ -176,7 +176,7 @@
     function applyCardEffects() {
         if (isMobile()) return;
         
-        document.querySelectorAll('.song-card:not([data-3d]), .shared-song-card:not([data-3d])').forEach(card => {
+        document.querySelectorAll('.song-card:not([data-3d])').forEach(card => {
             card.dataset['3d'] = 'true';
             
             const handleMouseMove = (e) => {
@@ -206,7 +206,8 @@
         document.body.insertBefore(container, document.body.firstChild);
         
         const fragment = document.createDocumentFragment();
-        for (let i = 0; i < 20; i++) {
+        const particleCount = window.innerWidth > 1400 ? 20 : 12;
+        for (let i = 0; i < particleCount; i++) {
             const p = document.createElement('div');
             const size = Math.random() * 4 + 2;
             p.style.cssText = `position:absolute;width:${size}px;height:${size}px;background:var(--accent);opacity:${Math.random() * 0.3 + 0.1};border-radius:50%;left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation:float ${Math.random() * 10 + 5}s infinite ease-in-out`;
@@ -218,7 +219,7 @@
     // === 스타일 주입 ===
     function injectStyles() {
         const style = document.createElement('style');
-        style.textContent = `@keyframes ripple{to{transform:scale(4);opacity:0}}@keyframes float{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(10px)}50%{transform:translateY(-40px) translateX(-10px)}75%{transform:translateY(-20px) translateX(5px)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}.mood-grid button.selected{animation:pulse 2.5s ease-in-out infinite}.heart-btn:active{animation:heartbeat .3s}@keyframes heartbeat{0%,100%{transform:scale(1)}25%{transform:scale(1.15)}50%{transform:scale(.95)}75%{transform:scale(1.1)}}.site-header{transition:transform .3s ease}.song-card,.shared-song-card{transform-style:preserve-3d}`;
+        style.textContent = `@keyframes ripple{to{transform:scale(4);opacity:0}}@keyframes float{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(10px)}50%{transform:translateY(-40px) translateX(-10px)}75%{transform:translateY(-20px) translateX(5px)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}.mood-grid button.selected{animation:pulse 2.5s ease-in-out infinite}.heart-btn:active{animation:heartbeat .3s}@keyframes heartbeat{0%,100%{transform:scale(1)}25%{transform:scale(1.15)}50%{transform:scale(.95)}75%{transform:scale(1.1)}}.site-header{transition:transform .3s ease}.song-card{transform-style:preserve-3d}`;
         document.head.appendChild(style);
     }
 
