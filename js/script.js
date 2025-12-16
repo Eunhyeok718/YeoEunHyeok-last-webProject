@@ -9,8 +9,12 @@
     const ANIMATION_DELAY_INCREMENT = 30;
     const SCROLL_THROTTLE = 100;
     const RESIZE_DEBOUNCE = 250;
+    const POPUP_DISMISSED_KEY = 'introPopupDismissed';
 
-    // 유틸리티: throttle
+    /**
+     * 지정한 간격 내 다중 호출을 1회로 제한합니다.
+     * 스크롤/리사이즈처럼 빈번한 이벤트 성능 최적화에 사용합니다.
+     */
     const throttle = (func, limit) => {
         let inThrottle;
         return function(...args) {
@@ -22,7 +26,10 @@
         };
     };
 
-    // 유틸리티: debounce
+    /**
+     * 지정한 지연 시간 동안 추가 호출이 없을 때 한 번만 실행합니다.
+     * 자동완성/리사이즈 후 처리 등 최종 상태에 1회 실행할 때 사용합니다.
+     */
     const debounce = (func, delay) => {
         let timeoutId;
         return function(...args) {
@@ -31,7 +38,9 @@
         };
     };
 
-    // 유틸리티: isMobile
+    /**
+     * 모바일 뷰포트 여부를 반환합니다.
+     */
     const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT;
 
     // === 페이지 로드 애니메이션 ===
@@ -42,6 +51,7 @@
         initScrollEffects();
         initMouseEffects();
         init3DCardEffect();
+        initIntroPopup();
         
         // 비필수 작업은 idle 시점에 실행
         if ('requestIdleCallback' in window) {
@@ -57,7 +67,58 @@
         }
     });
 
-    // === 페이지 전환 오버레이 생성 ===
+    /**
+     * 첫 방문 안내 팝업을 표시하고 선택 시 다시 보지 않도록 저장합니다.
+     */
+    function initIntroPopup() {
+        if (localStorage.getItem(POPUP_DISMISSED_KEY) === 'true') return;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'intro-modal-overlay';
+        overlay.innerHTML = `
+            <div class="intro-modal" role="dialog" aria-modal="true" aria-labelledby="introModalTitle">
+                <button class="intro-modal-close" aria-label="닫기">×</button>
+                <h2 id="introModalTitle">무뮤에 오신 것을 환영합니다!</h2>
+                <p class="intro-modal-text">감정 기반 추천, 공유, 랜덤 발견을 한 곳에서 즐겨보세요.</p>
+                <ul class="intro-modal-list">
+                    <li>🏠 메인: 선택한 감정과 어울리는 노래를 추천해줘요!</li>
+                    <li>❤️ 추천: 노래를 추천하거나 추천받을 수 있어요!</li>
+                    <li>🎲 랜덤: 랜덤으로 노래 한 곡을 추천해줘요!</li>
+                    <li>ℹ️ 소개: 무뮤에 대한 소개와 정보가 있어요!</li>
+                </ul>
+                <label class="intro-modal-check">
+                    <input type="checkbox" id="introModalHide">
+                    다시 보지 않기
+                </label>
+                <button class="intro-modal-action" type="button">시작하기</button>
+            </div>
+        `;
+
+        const closeBtn = overlay.querySelector('.intro-modal-close');
+        const actionBtn = overlay.querySelector('.intro-modal-action');
+        const hideCheckbox = overlay.querySelector('#introModalHide');
+
+        const closePopup = () => {
+            if (hideCheckbox && hideCheckbox.checked) {
+                localStorage.setItem(POPUP_DISMISSED_KEY, 'true');
+            }
+            document.body.classList.remove('modal-open');
+            overlay.remove();
+        };
+
+        closeBtn.addEventListener('click', closePopup);
+        actionBtn.addEventListener('click', closePopup);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closePopup();
+        });
+
+        document.body.appendChild(overlay);
+        document.body.classList.add('modal-open');
+    }
+
+    /**
+     * 페이지 전환 오버레이 요소를 생성합니다.
+     */
     function createPageTransitionOverlay() {
         const overlay = document.createElement('div');
         overlay.className = 'page-transition-overlay';
@@ -65,7 +126,9 @@
         document.body.appendChild(overlay);
     }
 
-    // === 페이지 전환 효과 ===
+    /**
+     * 내비게이션 클릭 시 페이드 전환 효과를 적용합니다.
+     */
     function initPageTransitions() {
         const navLinks = document.querySelectorAll('.nav a, .logo');
         const overlay = document.getElementById('pageTransitionOverlay');
@@ -97,7 +160,9 @@
         });
     }
 
-    // === 요소 순차 애니메이션 ===
+    /**
+     * 주요 요소들을 순차적으로 페이드/슬라이드 인 애니메이션으로 표시합니다.
+     */
     function animateElements() {
         const elementsToAnimate = document.querySelectorAll('.mood-grid button, .song-card, .shared-song-card, .random-card, .suggest-form-card');
         
@@ -113,7 +178,9 @@
         });
     }
 
-    // === 스크롤 효과 (throttle 적용) ===
+    /**
+     * 스크롤 시 헤더 숨김/표시, 바닥 도달 시 푸터 표시를 관리합니다.
+     */
     function initScrollEffects() {
         let lastScroll = 0;
         const header = document.querySelector('.site-header');
@@ -141,7 +208,9 @@
         window.addEventListener('scroll', handleScroll, { passive: true });
     }
 
-    // === 마우스 효과 (이벤트 위임) ===
+    /**
+     * 버튼류 클릭 시 리플 효과를 추가합니다. 이벤트 위임으로 성능을 최적화합니다.
+     */
     function initMouseEffects() {
         document.body.addEventListener('click', function(e) {
             const target = e.target.closest('button, .play-btn');
@@ -163,7 +232,9 @@
         });
     }
 
-    // === 3D 카드 효과 (최적화) ===
+    /**
+     * 데스크톱에서 카드에 3D 틸트 효과를 부여합니다.
+     */
     function init3DCardEffect() {
         if (isMobile()) return;
         
@@ -173,6 +244,9 @@
         applyCardEffects();
     }
     
+    /**
+     * 카드 요소에 마우스 위치 기반 회전/복귀 효과를 바인딩합니다.
+     */
     function applyCardEffects() {
         if (isMobile()) return;
         
@@ -197,7 +271,9 @@
         });
     }
 
-    // === 파티클 효과 (최적화) ===
+    /**
+     * 배경 파티클을 생성합니다. 큰 화면에서 개수를 늘립니다.
+     */
     function createParticles() {
         if (isMobile()) return;
         
@@ -216,7 +292,9 @@
         container.appendChild(fragment);
     }
 
-    // === 스타일 주입 ===
+    /**
+     * 런타임에 필요한 키프레임/효과 스타일을 주입합니다.
+     */
     function injectStyles() {
         const style = document.createElement('style');
         style.textContent = `@keyframes ripple{to{transform:scale(4);opacity:0}}@keyframes float{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(10px)}50%{transform:translateY(-40px) translateX(-10px)}75%{transform:translateY(-20px) translateX(5px)}}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}.mood-grid button.selected{animation:pulse 2.5s ease-in-out infinite}.heart-btn:active{animation:heartbeat .3s}@keyframes heartbeat{0%,100%{transform:scale(1)}25%{transform:scale(1.15)}50%{transform:scale(.95)}75%{transform:scale(1.1)}}.site-header{transition:transform .3s ease}.song-card{transform-style:preserve-3d}`;
